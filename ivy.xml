@@ -1,0 +1,6 @@
+<ivy-module version="2.0">
+    <info organisation="org.apache" module="disamb"/>
+    <dependencies>
+        <dependency org="org.apache.opennlp" name="opennlp-distr" rev="1.5.3"/>
+    </dependencies>
+</ivy-module>

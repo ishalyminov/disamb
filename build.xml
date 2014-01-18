@@ -1,0 +1,12 @@
+<project xmlns:ivy="antlib:org.apache.ivy.ant" name="disamb" default="download_opennlp">
+  <description>
+    Disambiguated morpho tagging for Ruscorpora
+  </description>
+
+  <target name="download_opennlp">
+    <ivy:retrieve />
+  </target>
+  <target name="clean">
+    <delete dir="lib"/>
+  </target>
+</project>
