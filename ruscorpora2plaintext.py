@@ -2,6 +2,7 @@ import codecs
 import xml.sax
 import sys
 
+TAGGER_TYPE = 'opennlp'
 
 class RuscorporaToPlaintextHandler(xml.sax.handler.ContentHandler):
     def __init__(self, in_tagger_type, outfile):
@@ -58,7 +59,7 @@ def convert(in_file):
     out = codecs.getwriter('utf-8')(sys.stdout, 'xmlcharrefreplace')
     retcode = 0
     try:
-        tagger_handler = RuscorporaToPlaintextHandler(out)
+        tagger_handler = RuscorporaToPlaintextHandler(TAGGER_TYPE, out)
         parser = xml.sax.make_parser()
         parser.setContentHandler(tagger_handler)
         parser.parse(in_file)
@@ -67,10 +68,12 @@ def convert(in_file):
     return retcode
 
 def main():
-    if len(sys.argv) < 2:
-        usage_string = 'Usage: ruscorpora2plaintext.py <file>'
+    if len(sys.argv) < 3:
+        usage_string = 'Usage: ruscorpora2plaintext.py <file> <tagger type: hunpos|opennlp>'
         print usage_string
         exit(0)
+    global TAGGER_TYPE
+    TAGGER_TYPE = sys.argv[2]
     retcode = convert(sys.argv[1])
     return retcode
 
