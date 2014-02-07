@@ -1,6 +1,8 @@
 import codecs
 import xml.sax
 import sys
+import re
+
 
 class RuscorporaToPlaintextHandler(xml.sax.handler.ContentHandler):
     def __init__(self, in_tagger_type, outfile):
@@ -9,6 +11,7 @@ class RuscorporaToPlaintextHandler(xml.sax.handler.ContentHandler):
         self.out = outfile
         self.within_sentence = False
         self.within_word = False
+        self.punct_buffer = ''
 
         self.feature_delimiter = '_'
         self.word_delimiter = ' '
@@ -23,6 +26,7 @@ class RuscorporaToPlaintextHandler(xml.sax.handler.ContentHandler):
         if tag == 'w':
             self.within_word = True
             self.word_features = self.__get_empty_word_feature_map()
+            self.__flush_punct()
         if tag == 'ana':
             self.word_tagged = True
             self.do_not_parse_sentence = True
@@ -34,6 +38,7 @@ class RuscorporaToPlaintextHandler(xml.sax.handler.ContentHandler):
     def endElement(self, tag):
         if tag == 'se':
             self.within_sentence = False
+            self.__flush_punct()
             self.out.write('\n')
         if tag == 'w':
             self.within_word = False
@@ -48,17 +53,17 @@ class RuscorporaToPlaintextHandler(xml.sax.handler.ContentHandler):
         self.out.write(self.feature_delimiter.join(word_features))
         self.out.write(self.word_delimiter)
 
-    def __flush_punct(self, in_content):
-        content_tokens = in_content.strip().split()
-        for content_token in content_tokens:
-            self.out.write(self.feature_delimiter.join([content_token] * 2))
-            self.out.write(self.word_delimiter)
+    def __flush_punct(self):
+        to_flush = re.sub('\s', ' ', self.punct_buffer).strip()
+        if to_flush:
+            print >>self.out, to_flush
+        self.punct_buffer = ''
 
     def characters(self, content):
         if self.within_word:
             self.word_features['form'].append(content.replace('`', ''))
         elif self.within_sentence:
-            self.__flush_punct(content)
+            self.punct_buffer += content
 
     def ignorableWhitespace(self, content):
         pass

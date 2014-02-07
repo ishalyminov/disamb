@@ -1,10 +1,14 @@
 import codecs
+import os
 import subprocess
 import accuracy
 
+DEFAULT_HUNPOS_FOLDER = os.path.join(os.path.dirname(__file__), 'hunpos-1.0-linux')
 
 class HunposWrapper(object):
-    def __init__(self, in_hunpos_train_bin, in_hunpos_tag_bin):
+    def __init__(self,
+                 in_hunpos_train_bin=os.path.join(DEFAULT_HUNPOS_FOLDER, 'hunpos-train'),
+                 in_hunpos_tag_bin=os.path.join(DEFAULT_HUNPOS_FOLDER, 'hunpos-tag')):
         self.hunpos_train = in_hunpos_train_bin
         self.hunpos_tag = in_hunpos_tag_bin
 
@@ -33,3 +37,9 @@ def train_and_calculate_accuracy(in_train_filename, in_test_filename, out_model_
     gold_stream = codecs.getreader('utf-8')(open('hunpos_result.txt'))
     accuracy_value = accuracy.calculate_accuracy(test_stream, gold_stream)
     return accuracy_value
+
+def tag_file(in_src_filename, in_model_filename, out_dst_filename):
+    wrapper = HunposWrapper()
+    tagged_text = wrapper.tag(open(in_src_filename), in_model_filename)
+    result_file = open(out_dst_filename, 'w')
+    print >>result_file, tagged_text
