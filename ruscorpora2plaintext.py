@@ -2,6 +2,9 @@ import codecs
 import xml.sax
 import sys
 
+TOLOWER = True
+GRAMMAR_MODE = 'pos' # or 'full'
+
 class RuscorporaToPlaintextHandler(xml.sax.handler.ContentHandler):
     def __init__(self, in_tagger_type, outfile):
         self.tagger_type = in_tagger_type
@@ -26,10 +29,19 @@ class RuscorporaToPlaintextHandler(xml.sax.handler.ContentHandler):
         if tag == 'ana':
             self.word_tagged = True
             self.do_not_parse_sentence = True
-            self.word_features['lex'].append(attrs['lex'])
-            self.word_features['gramm'].append(attrs['gr'])
+            self.word_features['lex'].append(self.__process_word(attrs['lex']))
+            self.word_features['gramm'].append(self.__process_grammar(attrs['gr']))
         if tag == 'se':
             self.within_sentence = True
+
+    # for the sake of simplicity, looking at POS only!
+    def __process_grammar(self, in_grammar):
+        return in_grammar.split(',')[0] if len(in_grammar) else in_grammar
+
+    def __process_word(self, in_word):
+        if TOLOWER:
+            in_word = in_word.lower()
+        return in_word
 
     def endElement(self, tag):
         if tag == 'se':
@@ -56,12 +68,13 @@ class RuscorporaToPlaintextHandler(xml.sax.handler.ContentHandler):
 
     def characters(self, content):
         if self.within_word:
-            self.word_features['form'].append(content.replace('`', ''))
+            self.word_features['form'].append(self.__process_word(content).replace('`', ''))
         elif self.within_sentence:
             self.__flush_punct(content)
 
     def ignorableWhitespace(self, content):
         pass
+
 
 def convert(in_stream, in_tagger_type, out_stream):
     out = codecs.getwriter('utf-8')(out_stream, 'xmlcharrefreplace')
@@ -74,6 +87,7 @@ def convert(in_stream, in_tagger_type, out_stream):
     except xml.sax.SAXException:
         retcode = 1
     return retcode
+
 
 def main():
     if len(sys.argv) < 3:

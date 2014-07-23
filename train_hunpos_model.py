@@ -29,10 +29,10 @@ def prepare_datasets(in_texts_root):
 
 if __name__ == '__main__':
     if len(sys.argv) < 3:
-        print 'Usage: train_hunpos_model.py <input corpus> <model filename> [--create_datasets]'
+        print 'Usage: train_hunpos_model.py <input corpus> <model filename> [--create-datasets]'
         exit(0)
     datasets = sys.argv[1]
-    if len(sys.argv) == 4 and sys.argv[3] == '--create_datasets':
+    if len(sys.argv) == 4 and sys.argv[3] == '--create-datasets':
         prepare_datasets(sys.argv[1])
         datasets = DATASETS_FOLDER
     print train_model(datasets, sys.argv[2])
